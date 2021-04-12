@@ -1,0 +1,4 @@
+umbral== 0.1.3a2
+Flask==1.1.2
+Flask-Cors==3.0.10
+cryptography ==3.4.7

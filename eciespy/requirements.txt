@@ -1,0 +1,4 @@
+eciespy== 0.3.10
+Flask==1.1.2
+Flask-Cors==3.0.10
+fastecdsa==2.1.5
