@@ -64,7 +64,7 @@ Once we click “Connect Cloud Wallet”, the following process happens.
 
 ![Alice02](https://user-images.githubusercontent.com/61564542/116533713-b2f3d700-a8af-11eb-9c99-016c8f25e96e.png)
 
-2. Securely store information on cloud wallet, and sync one’s information among multiple local devices of that person via cloud wallet.
+**2. Securely store information on cloud wallet, and sync one’s information among multiple local devices of that person via cloud wallet.**
 
 To store information securely on the cloud wallet means that we need to encrypt information before storing on the cloud to not let anyone including the cloud provider able to see our data. As a result, we will encrypt our data which is a text “Secret of Alice encrypted with umbral!” via using our Umbral public key which will result in 2 components: secret text and capsule string. (In this context is Alice, we will discuss later why we use Umbral instead of eciespy for encrypting our data for storing on cloud agent)
 
@@ -80,7 +80,7 @@ Crucial Point: Although this seems just like normal encrypting and decrypting st
 
 
 
-3. Messaging interface among different people via cloud wallet.
+**3. Messaging interface among different people via cloud wallet.**
 
 
 In this POC, we mock only the case when Alice sends the data to Bob. (Of course, in reality Bob also has to be able to send data to Alice, but it would be similar implementation anyway so in this POC our code supports only Alice sending data to Bob).
@@ -140,43 +140,45 @@ The following is all related key information we used in this POC.
 sk=secret key=private key
 pk=public key
 
-Alice
+**Alice**
 Alice:Proxy re encryption (Umbral)
-skA: keys.UmbralPrivateKey(curvebn.CurveBN(backend._int_to_bn(0x000001F6F133A748),SECP256R1),config.default_params())
+- skA: keys.UmbralPrivateKey(curvebn.CurveBN(backend._int_to_bn(0x000001F6F133A748),SECP256R1),config.default_params())
 
 We can see that the raw content of Umbral private key of Alice is just 0x000001F6F133A748 and we just formulate the key as shown above.
 
-pkA: keys.UmbralPublicKey(point.Point.from_bytes(b"\x033\x07x'l\xfc\xf1\xc9i~\x01;s\xea\x19\xaf\xaa\xcc\x98\xb5\xb5\x1d1\xd7\x90\x01/\x8b'Cs\x13"), params.UmbralParameters(SECP256R1))
+- pkA: keys.UmbralPublicKey(point.Point.from_bytes(b"\x033\x07x'l\xfc\xf1\xc9i~\x01;s\xea\x19\xaf\xaa\xcc\x98\xb5\xb5\x1d1\xd7\x90\x01/\x8b'Cs\x13"), params.UmbralParameters(SECP256R1))
 
 
 Alice: Eciespy
-sk1 0xa4207fcf1f7457b55a781873de7a2715a363bbea87f387b40b3c9dfaae63f7f9
-pk1 0xc962736683a565d12dbc299b5a17d97fe53137af2a151766c741d5fbb1d1a873594c648f28702a01b7588d895c56763859e52d31c62abf9deb15659b497c9928
-sk2 0xc60d216e58ca0eff4f2993195beb6f082c9fbe63ce89b93d368f7984e1eb84af
-pk2 0x9d251415240aca8d926596bfe945fde874f4e4444709db76173d2a439cba30da0de1663c7709d8c399adb05a044eafc49aa1ab35f827fe32e7dd2d98a9d6cc34
+- sk1 0xa4207fcf1f7457b55a781873de7a2715a363bbea87f387b40b3c9dfaae63f7f9
+- pk1 0xc962736683a565d12dbc299b5a17d97fe53137af2a151766c741d5fbb1d1a873594c648f28702a01b7588d895c56763859e52d31c62abf9deb15659b497c9928
+- sk2 0xc60d216e58ca0eff4f2993195beb6f082c9fbe63ce89b93d368f7984e1eb84af
+- pk2 0x9d251415240aca8d926596bfe945fde874f4e4444709db76173d2a439cba30da0de1663c7709d8c399adb05a044eafc49aa1ab35f827fe32e7dd2d98a9d6cc34
 
 
 Alice:ECDSA curve 256r1
-private 55296113075965769983214099068001948551333506148419620277267301735931301306895
-public X: 0x947599fe125266e93f2333cdc58ca61d4f6bcdcf12ee889632bac298a5d64c5
-Y: 0x8dc63a6fd1ceef6cf3bbee9d0738762ce6e0af9bdd6c106abff5940a101cab30
+- private 55296113075965769983214099068001948551333506148419620277267301735931301306895
+- public 
+	- X: 0x947599fe125266e93f2333cdc58ca61d4f6bcdcf12ee889632bac298a5d64c5
+	- Y: 0x8dc63a6fd1ceef6cf3bbee9d0738762ce6e0af9bdd6c106abff5940a101cab30
 
 
-Bob
+**Bob**
 Bob: Proxy re encryption (Umbral)
-skB: keys.UmbralPrivateKey(curvebn.CurveBN(backend._int_to_bn(0x000002C84AE01688),SECP256R1),config.default_params())
-pkB: keys.UmbralPublicKey(point.Point.from_bytes(b'\x03\xc7\xe5P\x1d\xd5\x84\x04\xb3\xbd6\xed\x84\x0b\x93\x8cO\xbe\xcd\xc9K\x91\x88\xe2\xe9xh\xfd\xa6\x87\x835\x9c'), params.UmbralParameters(SECP256R1))
+- skB: keys.UmbralPrivateKey(curvebn.CurveBN(backend._int_to_bn(0x000002C84AE01688),SECP256R1),config.default_params())
+- pkB: keys.UmbralPublicKey(point.Point.from_bytes(b'\x03\xc7\xe5P\x1d\xd5\x84\x04\xb3\xbd6\xed\x84\x0b\x93\x8cO\xbe\xcd\xc9K\x91\x88\xe2\xe9xh\xfd\xa6\x87\x835\x9c'), params.UmbralParameters(SECP256R1))
 
 Bob: Eciespy
-sk1: 0xc1f3721a60df95b19f079a794eec9555f2afc2fe428df94fe5308bb4a5efad5a
-pk1: 0x7fb36db75a49cc7b14011d1b88623749f33da2aa45b328aa4854337a0c0e7656241f14d56e2e91f8cbbc4d6fdc2cf3462bcfa1f14f79d537c3e58380f204c730
-sk2: 0xc1538febd2c058fe9a4ad3525430e0b95776ee85f01bd163c1f4802df0725db8
-pk2: 0xeb608b4d1002c74dd55636b70617bff5f13b4cf548c22fc224798a05cbb688036488a86d32118efd5f5cacc75996009b73f3fe214b15ada419da1c700e577f78
+- sk1: 0xc1f3721a60df95b19f079a794eec9555f2afc2fe428df94fe5308bb4a5efad5a
+- pk1: 0x7fb36db75a49cc7b14011d1b88623749f33da2aa45b328aa4854337a0c0e7656241f14d56e2e91f8cbbc4d6fdc2cf3462bcfa1f14f79d537c3e58380f204c730
+- sk2: 0xc1538febd2c058fe9a4ad3525430e0b95776ee85f01bd163c1f4802df0725db8
+- pk2: 0xeb608b4d1002c74dd55636b70617bff5f13b4cf548c22fc224798a05cbb688036488a86d32118efd5f5cacc75996009b73f3fe214b15ada419da1c700e577f78
 
 Bob: ECDSA curve 256r1
-private 62542187512261159204913937044612363382356928282649244457036375298228417908947
-public X: 0x7c9eef372063e609b9662b8ddb5d663c5a54ebd75c166ba8a811de9728615559
-Y: 0x4fe08a04cb51549721b08f812d690149d554779dd232a16cf1ae60bb52a3c334
+- private 62542187512261159204913937044612363382356928282649244457036375298228417908947
+- public
+	- X: 0x7c9eef372063e609b9662b8ddb5d663c5a54ebd75c166ba8a811de9728615559
+	- Y: 0x4fe08a04cb51549721b08f812d690149d554779dd232a16cf1ae60bb52a3c334
 
 
 
