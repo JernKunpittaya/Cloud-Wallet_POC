@@ -29,7 +29,6 @@ We need to run the above two cryptographic helper files (via port 7777 and 8000)
 
 Now we investigate each of our main issues.
 
-
 1. Connect one’s local wallet with one’s own cloud wallet.
 We look at authentication between local and cloud wallets of the same person.
 Note that we assume that we already did the registration on the cloud wallet, so the cloud wallet has information of the owner of the cloud wallet (which is Alice's did (which we represent with Alice's eciespy public key), public_sign1, public_sign2 for verifying the digital signature from Alice)
@@ -41,6 +40,7 @@ Note that after building a docker, we need to run it with “docker run -p 5000:
 
 After running those, we can see the interface of Alice’s local wallet as follows.
 
+![alt text](https://github.com/JernKunpittaya/Finema_POC/issues/1#issue-870819666)
 
 Once we click “Connect Cloud Wallet”, the following process happens.
 Alice’s local wallet will sign Alice’s DID by its private key for signing digital signature with ecdsa.
