@@ -12,10 +12,10 @@ For the sake of explaining, we have two users in our POC, Alice and Bob. We repr
 Local Wallet
 Since we simulate the behavior of both Alice’s and Bob’s local wallet via using React, we need another API to compute the necessary cryptography for it. We have two python files for these cryptography as follows.
 
-1.) crypto/crypto.py
+1. crypto/crypto.py
 This file contains two cryptography techniques:
--eciespy is used for encrypting and decrypting with asymmetric keys (although inside mechanics still use symmetric keys, but from a high level we see it as using asymmetric keys). We use the default curve:secp256k1. We use this library for authentication when the local wallet is accessing its cloud wallet. 
--Fastecdsa: for signing a digital signature, we set the curve to be secp256r1 to match with Finema’s. We use this library for authentication when the local wallet is trying to access its cloud wallet. 
+	- eciespy is used for encrypting and decrypting with asymmetric keys (although inside mechanics still use symmetric keys, but from a high level we see it as using asymmetric keys). We use the default curve:secp256k1. We use this library for authentication when the local wallet is accessing its cloud wallet. 
+	- Fastecdsa: for signing a digital signature, we set the curve to be secp256r1 to match with Finema’s. We use this library for authentication when the local wallet is trying to access its cloud wallet. 
 
 We can build a docker by going into crypto folder and: docker build -t <username>/crypto .
 Note that after building a docker, we need to run it with: docker run -p 7777:7777 <username>/crypto to make it run in localhost with port 7777
@@ -35,8 +35,8 @@ We look at authentication between local and cloud wallets of the same person.
 Note that we assume that we already did the registration on the cloud wallet, so the cloud wallet has information of the owner of the cloud wallet (which is Alice's did (which we represent with Alice's eciespy public key), public_sign1, public_sign2 for verifying the digital signature from Alice)
 
 To see the demonstration, we have to run Alice’s local wallet and Alice’s cloud wallet.
--Alice’s local wallet: go into passwordless_pre_Alice folder and run “npm start” (This will run through port 3000)
--Alice’s cloud wallet: go into passwordless_pre_Alice/cloudAlice then run “docker build -t <username>/api .”
+- Alice’s local wallet: go into passwordless_pre_Alice folder and run “npm start” (This will run through port 3000)
+- Alice’s cloud wallet: go into passwordless_pre_Alice/cloudAlice then run “docker build -t <username>/api .”
 Note that after building a docker, we need to run it with “docker run -p 5000:5000 <username>/api” to make it run in localhost with port 5000
 
 After running those, we can see the interface of Alice’s local wallet as follows.
@@ -46,9 +46,9 @@ After running those, we can see the interface of Alice’s local wallet as follo
 
 
 Once we click “Connect Cloud Wallet”, the following process happens.
--Alice’s local wallet will sign Alice’s DID by its private key for signing digital signature with ecdsa.
--Then the local wallet will encrypt (via eciespy) Alice’s DID with the public key of Alice’s cloud wallet.
--The local wallet also encrypts (via eciespy) the key pairs from signing Alice’s DID with ecdsa with the public key of Alice’s cloud wallet.
+- Alice’s local wallet will sign Alice’s DID by its private key for signing digital signature with ecdsa.
+- Then the local wallet will encrypt (via eciespy) Alice’s DID with the public key of Alice’s cloud wallet.
+- The local wallet also encrypts (via eciespy) the key pairs from signing Alice’s DID with ecdsa with the public key of Alice’s cloud wallet.
 -Then, the local wallet sends the encrypted version of did and 2 key pairs to the cloud wallet to request the access token to the cloud wallet.
 -Once the cloud wallet receives the information that are sent from the local wallet as we discussed above, it decrypts the encrypted did and 2 key pairs with its corresponding eciespy private key.
 -Then, the cloud wallet looks up whether the decrypted DID is on its registered list of the owner of the cloud wallet or not. If not, it just aborts and rejects the request. 
