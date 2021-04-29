@@ -7,6 +7,11 @@ Summary:
 2. Securely store information on cloud wallet, and sync one’s information among multiple local devices of that person via cloud wallet.
 3. Messaging interface among different people via cloud wallet.
 
+The following diagram is the summary of this POC.
+
+![Secured Cloud Wallet - Page 2](https://user-images.githubusercontent.com/61564542/116534987-37932500-a8b1-11eb-93f1-d5534da159b0.png)
+
+
 For the sake of explaining, we have two users in our POC, Alice and Bob. We represent each of their local wallets with React.js while representing each of their cloud wallet as Flask Restful API on a python file. We will first explore what each of our code files does and then see how each of them interacts with one another to create the functional system that represents its real usage. Note that in this document, we will provide only a big picture. To see the code in detail, you can look at our comment in each code file.
 
 Local Wallet
@@ -49,13 +54,13 @@ Once we click “Connect Cloud Wallet”, the following process happens.
 - Alice’s local wallet will sign Alice’s DID by its private key for signing digital signature with ecdsa.
 - Then the local wallet will encrypt (via eciespy) Alice’s DID with the public key of Alice’s cloud wallet.
 - The local wallet also encrypts (via eciespy) the key pairs from signing Alice’s DID with ecdsa with the public key of Alice’s cloud wallet.
--Then, the local wallet sends the encrypted version of did and 2 key pairs to the cloud wallet to request the access token to the cloud wallet.
--Once the cloud wallet receives the information that are sent from the local wallet as we discussed above, it decrypts the encrypted did and 2 key pairs with its corresponding eciespy private key.
--Then, the cloud wallet looks up whether the decrypted DID is on its registered list of the owner of the cloud wallet or not. If not, it just aborts and rejects the request. 
--If the user exists, it now uses the decrypted value of two key pairs, together with already known public key of the user’s digital signature (the user that belongs to that DID), to check the digital signature. If it is tampered, it aborts and rejects the request.
--If the digital signature is valid, the cloud wallet generates authentication token based on the user’s did, secret text, and corresponding time. Then, the cloud wallet encrypts this token with the eciespy public key of the local wallet. (In our case, we use eciespy public key of the local wallet as the did of user’s local wallet.)
--Once the local wallet gets the encrypted token, it decrypts the token using its eciespy private key, and stores the decrypted token.
--Then, it makes another request to the cloud wallet again but this time with a token. Once the cloud wallet checks that the token is valid and not expired yet. It sends confirmation back to the local wallet. The local cloud will show “Connected to cloud agent successfully,” signaling that the local wallet successfully connects to the cloud wallet.
+- Then, the local wallet sends the encrypted version of did and 2 key pairs to the cloud wallet to request the access token to the cloud wallet.
+- Once the cloud wallet receives the information that are sent from the local wallet as we discussed above, it decrypts the encrypted did and 2 key pairs with its corresponding eciespy private key.
+- Then, the cloud wallet looks up whether the decrypted DID is on its registered list of the owner of the cloud wallet or not. If not, it just aborts and rejects the request. 
+- If the user exists, it now uses the decrypted value of two key pairs, together with already known public key of the user’s digital signature (the user that belongs to that DID), to check the digital signature. If it is tampered, it aborts and rejects the request.
+- If the digital signature is valid, the cloud wallet generates authentication token based on the user’s did, secret text, and corresponding time. Then, the cloud wallet encrypts this token with the eciespy public key of the local wallet. (In our case, we use eciespy public key of the local wallet as the did of user’s local wallet.)
+- Once the local wallet gets the encrypted token, it decrypts the token using its eciespy private key, and stores the decrypted token.
+- Then, it makes another request to the cloud wallet again but this time with a token. Once the cloud wallet checks that the token is valid and not expired yet. It sends confirmation back to the local wallet. The local cloud will show “Connected to cloud agent successfully,” signaling that the local wallet successfully connects to the cloud wallet.
 
 ![Alice02](https://user-images.githubusercontent.com/61564542/116533713-b2f3d700-a8af-11eb-9c99-016c8f25e96e.png)
 
@@ -64,9 +69,11 @@ Once we click “Connect Cloud Wallet”, the following process happens.
 To store information securely on the cloud wallet means that we need to encrypt information before storing on the cloud to not let anyone including the cloud provider able to see our data. As a result, we will encrypt our data which is a text “Secret of Alice encrypted with umbral!” via using our Umbral public key which will result in 2 components: secret text and capsule string. (In this context is Alice, we will discuss later why we use Umbral instead of eciespy for encrypting our data for storing on cloud agent)
 
 Since now our cloud wallet has an encrypted version of “Secret of Alice encrypted with umbral!”, when we want to retrieve the data into our local wallet we can just click “Get data.” The following processes happen.
-The local wallet makes the request to get the data from the cloud wallet with the token we have. 
-The cloud wallet will check the token that we sent along with our request. If it is valid, the cloud wallet will return our data which was encrypted with Umbral and stay on the cloud. (Because of how Umbral works, we need to return both secret text and capsule string.) Note that we can see that in this process if we do not have the token or the token is not valid which can be seen if we do not have “Connected to cloud agent successfully” on our local wallet, our request to get the data from the cloud wallet will fail.
-Once the local cloud wallet gets the secret text and capsule string, we can just decrypt it by using our private Umbral key and get the desired data “Secret of Alice encrypted with umbral!”
+- The local wallet makes the request to get the data from the cloud wallet with the token we have. 
+- The cloud wallet will check the token that we sent along with our request. If it is valid, the cloud wallet will return our data which was encrypted with Umbral and stay on the cloud. (Because of how Umbral works, we need to return both secret text and capsule string.) Note that we can see that in this process if we do not have the token or the token is not valid which can be seen if we do not have “Connected to cloud agent successfully” on our local wallet, our request to get the data from the cloud wallet will fail.
+- Once the local cloud wallet gets the secret text and capsule string, we can just decrypt it by using our private Umbral key and get the desired data “Secret of Alice encrypted with umbral!”
+
+![Alice03](https://user-images.githubusercontent.com/61564542/116534865-15010c00-a8b1-11eb-802e-cd3943da36cf.png)
 
 
 Crucial Point: Although this seems just like normal encrypting and decrypting stuff, it is not! What matters is how this structure interacts with our overall system as follows. First, we need to understand that one user can have multiple local devices but just one cloud wallet. Each of that device will have a different DID, public and private eciespy key, hence each device has to be registered separately with the cloud wallet to be able to get authenticated. However, all of these devices have the same public and private Umbral key, so each of them can retrieve and decrypted the data from the cloud wallet which is encrypted using the same public Umbral key. And most importantly, a cloud wallet does not have a private Umbral key , so it cannot see our encrypted data that is stored on the cloud wallet. So, this separation between umbral and eciespy allows us to syncing the same data across different local devices while also authenticating the local devices separately which makes it easy to revoke an access to cloud wallet for a specific device if that device is lost.
@@ -78,36 +85,34 @@ Crucial Point: Although this seems just like normal encrypting and decrypting st
 
 In this POC, we mock only the case when Alice sends the data to Bob. (Of course, in reality Bob also has to be able to send data to Alice, but it would be similar implementation anyway so in this POC our code supports only Alice sending data to Bob).
 Now, we also need to run both Bob’s local wallet and cloud wallet.
--Bob’s local wallet: go into passwordless_pre_Bob folder and run “npm run” (This will run through port 3333)
--Bob’s cloud wallet: go into passwordless_pre_Bob/cloudBob then run “docker build -t <username>/apibob”
+- Bob’s local wallet: go into passwordless_pre_Bob folder and run “npm run” (This will run through port 3333)
+- Bob’s cloud wallet: go into passwordless_pre_Bob/cloudBob then run “docker build -t <username>/apibob”
 Note that after building a docker, we need to run it with “docker run -p 5555:5555 <username>/apibob” to make it run in localhost with port 5555.
 
 Alice wants to send its encrypted data (2 components: ciphertext and capsule string) that is stored on its cloud wallet to Bob. 
 
 Once we click “Connect Bob” on Alice’s local wallet, the following things happen.
-1.Alice’s local wallet formulates a re-encryption key for Bob by using Alice’s Umbral private key and Bob’s Umbral public key. Alice’s re-encryption key is also signed with a digital signature by another generated Alice’s Umbral private key itself during the formulating the encryption key process. Hence, the local wallet generate kfrag_string (the re-encryption key) and verifying_string (for checking the signature of kfrags) 
+- Alice’s local wallet formulates a re-encryption key for Bob by using Alice’s Umbral private key and Bob’s Umbral public key. Alice’s re-encryption key is also signed with a digital signature by another generated Alice’s Umbral private key itself during the formulating the encryption key process. Hence, the local wallet generate kfrag_string (the re-encryption key) and verifying_string (for checking the signature of kfrags) 
 	Note that in this POC, another private key that is generated for digital signature is randomly generated every time, and we can verify it by also sending verifying_string with it. Of course, we can do the other way, which is assigning a specific private key for Alice to sign the digital signature for re-encryption key and store its verifying_string on PKI.
 
-2. Alice’s local wallet then sends the request along with kfrag_string and verifying_string to Alice’s cloud wallet (of course with the token, so if the token is not valid, Alice is not authorized to command the cloud wallet to send data to Bob).
-3. Once Alice’s cloud wallet validates the token, it sends Alice’s encrypted data (ciphertext and capsule_string) along with kfrag_string and verifying_string to Bob’s cloud wallet. 
-4. Once Bob’s cloud wallet receives the following information from Alice’s cloud wallet, it stores that information on its cloud wallet. Then, return the response to tell Alice’s cloud wallet that it already receives the message. Then Alice’s cloud wallet sent the message to Alice’s local wallet, confirming that “send to Bob successfully.”
+- Alice’s local wallet then sends the request along with kfrag_string and verifying_string to Alice’s cloud wallet (of course with the token, so if the token is not valid, Alice is not authorized to command the cloud wallet to send data to Bob).
+- Once Alice’s cloud wallet validates the token, it sends Alice’s encrypted data (ciphertext and capsule_string) along with kfrag_string and verifying_string to Bob’s cloud wallet. 
+- Once Bob’s cloud wallet receives the following information from Alice’s cloud wallet, it stores that information on its cloud wallet. Then, return the response to tell Alice’s cloud wallet that it already receives the message. Then Alice’s cloud wallet sent the message to Alice’s local wallet, confirming that “send to Bob successfully.”
 
-
-
+![Alice04](https://user-images.githubusercontent.com/61564542/116534892-1a5e5680-a8b1-11eb-86c9-5a58e1cb4fd2.png)
 
 Now we will look at the process of how Bob accesses the message sent from Alice. (He gets 4 chunks of information from Alice: ciphertext, capsule_string, kfrags, and verifying string.) 
 
 We now switch to work on Bob’s local wallet, which shares the feature of “connect Cloud Wallet” to authenticate Bob’s local wallet to Bob’s cloud wallet, and the feature of “Get Bob’s own data” that simply retrieves or sync Bob’s data that is encrypted by his Umbral public key and is stored on Bob’s cloud wallet.
 
-
+![Bob01](https://user-images.githubusercontent.com/61564542/116534911-1f230a80-a8b1-11eb-876c-cfbce6fcb39b.png)
 
 Now, when Bob wants to access Alice’s data from those unreadable chunks on his cloud wallet, he clicks “Get Alice’s data”, the process happens as follows.
-1. Bob’s local wallet makes a request to Bob’s cloud wallet with the token.
-2. Once Bob’s cloud wallet validates the token, it returns the four information about Alice’s data that we have described above back to Bob’s local wallet.
-3. Once the local wallet gets those information, it simply performs decryption via using a re-encryption key to get clear text of Alice’s data that neither Alice’s nor Bob’s cloud wallets have seen. (Note that since Bob’s local wallet is implemented in React, to decrypt by using re-encryption of Umbral, we just need to make a request to RestFul API representing Umbral library.) We can see that in Bob’s local wallet now, we have Alice’s information (“Secret of Alice encrypted with umbral!”)
+- Bob’s local wallet makes a request to Bob’s cloud wallet with the token.
+- Once Bob’s cloud wallet validates the token, it returns the four information about Alice’s data that we have described above back to Bob’s local wallet.
+- Once the local wallet gets those information, it simply performs decryption via using a re-encryption key to get clear text of Alice’s data that neither Alice’s nor Bob’s cloud wallets have seen. (Note that since Bob’s local wallet is implemented in React, to decrypt by using re-encryption of Umbral, we just need to make a request to RestFul API representing Umbral library.) We can see that in Bob’s local wallet now, we have Alice’s information (“Secret of Alice encrypted with umbral!”)
 
-
-
+![Bob02](https://user-images.githubusercontent.com/61564542/116534931-2518eb80-a8b1-11eb-82ce-491ffee43554.png)
 
 Now, since Bob already knows the clear text of what Alice has sent him, he no longer needs those four information of Alice’s data on his cloud wallet. Therefore, by clicking “Delete Alice’s data,” Bob can delete those 4 informations about Alice on his cloud wallet. (Of course, to be able to delete it, the local wallet needs to make a request with a valid token) Note that the Alice’s clear text in Bob’s local wallet is not deleted with this process.
 
@@ -119,10 +124,10 @@ Optional: once Bob uploads his version of Alice’s data on cloud wallet (Alice�
 
 
 During this Doc, you may encounter some variables that has the word “string” in it like capsule_string. That is just implementation details that do not matter much for the big picture in this document. However, to be able to understand the actual code, we describe what format of data we store as follows.
-Hex string: most key like private eciespy key, or private Umbral key are stored as hex string.
-String: since most of cryptographic algorithm returns the value as a byte, we format those bytes into string so that we can safely transport it over json. We format the byte to string via following steps.
--From byte, we encode with base64.
--Once we obtain that base 64 encode, we decode it with ‘ascii’ to get the string. (We need 2 steps because in Python base64 encoding outputs byte instead of string, so we need to decode them by ascii to obtain the string format) 
+- Hex string: most key like private eciespy key, or private Umbral key are stored as hex string.
+- String: since most of cryptographic algorithm returns the value as a byte, we format those bytes into string so that we can safely transport it over json. We format the byte to string via following steps.
+	- From byte, we encode with base64.
+	- Once we obtain that base 64 encode, we decode it with ‘ascii’ to get the string. (We need 2 steps because in Python base64 encoding outputs byte instead of string, so we need to decode them by ascii to obtain the string format) 
 To get byte from our stored string, we just do it reversely. Note that this becomes clear as you look at our code and the comment around it. 
 
 Another concept that is crucial to our implementation is to send the “raw content” of object instead of the actual object. For example, in Umbral, we cannot send Capsule object from one wallet to another wallet. So, we send the “raw content” of Capsule (In this case, just a byte of capsule that can be used to generate the capsule on the other end) Note that of course, in this POC, we format that byte to string via the way we described above before sending. 
@@ -172,8 +177,6 @@ Bob: ECDSA curve 256r1
 private 62542187512261159204913937044612363382356928282649244457036375298228417908947
 public X: 0x7c9eef372063e609b9662b8ddb5d663c5a54ebd75c166ba8a811de9728615559
 Y: 0x4fe08a04cb51549721b08f812d690149d554779dd232a16cf1ae60bb52a3c334
-
-
 
 
 
