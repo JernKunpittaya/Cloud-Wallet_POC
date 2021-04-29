@@ -40,7 +40,9 @@ Note that after building a docker, we need to run it with “docker run -p 5000:
 
 After running those, we can see the interface of Alice’s local wallet as follows.
 
-![alt text](https://github.com/JernKunpittaya/Finema_POC/issues/1#issue-870819666)
+![Alice01](https://user-images.githubusercontent.com/61564542/116531567-4f68aa00-a8ad-11eb-9fe9-59c52cfdf54d.png)
+
+
 
 Once we click “Connect Cloud Wallet”, the following process happens.
 Alice’s local wallet will sign Alice’s DID by its private key for signing digital signature with ecdsa.
